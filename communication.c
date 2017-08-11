@@ -79,7 +79,8 @@ int initializeCommunications(int mode)
         server.sin_addr.s_addr = INADDR_ANY;
         
         bind(socket_fd, (struct sockaddr *)&server, sizeof(struct sockaddr));
-    
+    	
+		
         return 0;
            
     }
