@@ -12,7 +12,7 @@
 
 #include "communication.h"
 
-int side = 0;
+int side = HOST;
 
 //server variables
 struct sockaddr_in server;
@@ -24,9 +24,6 @@ socklen_t size = sizeof(struct sockaddr_in);
 struct sockaddr_in server_info;
 struct hostent *host_ent;
 int socket_fd;
-
-#define PORT 1266 //636 is already taken
-#define BACKLOG 1 //number of clients, essentially
 
 int initializeCommunications(int mode)
 {
@@ -59,12 +56,12 @@ int initializeCommunications(int mode)
         system("sudo mkdir /home/root/communication/data");
     }
     
-    if (mode == 1)
+    if (mode == CLIENT)
     {
         system("cd /;./home/root/wifi_setup/client_on.sh");
         return 0;
     }
-    else if (mode == 0)
+    else if (mode == HOST)
     {
         system("cd /;./home/root/wifi_setup/host_on.sh");
         
@@ -80,19 +77,19 @@ int initializeCommunications(int mode)
         
         bind(socket_fd, (struct sockaddr *)&server, sizeof(struct sockaddr));
     	
-		
         return 0;
            
     }
     else
     {
+		//mode is not recognized
         return -1;
     }
 }
 
 int waitForConnection()
 {
-    if (side == 0)
+    if (side == HOST)
     {
         listen(socket_fd, BACKLOG);
         if ((client_fd = accept(socket_fd, (struct sockaddr_in *)&dest, &size)) == -1)
@@ -111,7 +108,7 @@ int waitForConnection()
 
 int connectToWallaby(const char ssid[], const char psk[]) //returns -1 if connection fails, -2 if not in client mode
 {
-    if (side == 0) return -2;
+    if (side == HOST) return -2; //instead of doing this, maybe run client_on.sh
     //remove existing networks
     int i;
     
@@ -203,10 +200,20 @@ int waitForSignal(int timeout)
     int base = 0;
     while (base < timeout)
     { 
-        if ((recv(socket_fd, message, sizeof(int), MSG_DONTWAIT)) != 0)
-        {
-            return message;
-        }
+		if (side == HOST)
+		{
+			if ((recv(client_fd, message, sizeof(int), MSG_DONTWAIT)) != 0)
+			{
+				return message;
+			}
+		}
+		else
+		{
+			if ((recv(socket_fd, message, sizeof(int), MSG_DONTWAIT)) != 0)
+			{
+				return message;
+			}
+		}
         base += 100;
         msleep(100);
     }
@@ -215,10 +222,21 @@ int waitForSignal(int timeout)
 //f
 int sendSignal(int signal)
 {
-    //return 0 if sending works, otherwise return -1
-    if ( send(socket_fd, signal, sizeof(int), 0) == 0)
-    {
-        return -1;
-    }
+	//return 0 if sending works, otherwise return -1
+	if (side == HOST)
+	{
+		if ( send(client_fd, signal, sizeof(int), 0) == 0)
+		{
+			return -1;
+		}
+	}
+	else
+	{
+		if ( send(socket_fd, signal, sizeof(int), 0) == 0)
+		{
+			return -1;
+		}
+	}
+    
     return 0;
 }

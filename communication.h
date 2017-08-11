@@ -2,6 +2,10 @@
 #define _COMMUNICATION_H
 
 #define TIMEOUT_ERR -5000
+#define HOST 0
+#define CLIENT 1
+#define PORT 1266 //636 is already taken, sadly
+#define BACKLOG 1 //number of clients, essentially
 
 int initializeCommunications(int mode); //initialize communication lib, choosing client or host
 int waitForConnection(); //applies only to the host
