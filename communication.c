@@ -42,13 +42,13 @@ int initializeCommunications(int mode)
         text = "wpa_cli ter\nkillall hostapd\nwpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant-wlan0.conf\necho \"Client is now on.\"";
         fprintf(f,text);
         fclose(f);
-		system("chmod +x /home/root/wifi_setup/client_on.sh");
+	    system("chmod +x /home/root/wifi_setup/client_on.sh");
         
         f = fopen("/home/root/wifi_setup/client_on.sh", "w");
         text = "/usr/bin/python /usr/bin/wifi_configurator.py\necho \"Host is now on.\"";
         fprintf(f,text);
         fclose(f);
-		system("chmod +x /home/root/wifi_setup/host_on.sh");
+	    system("chmod +x /home/root/wifi_setup/host_on.sh");
     }
     
     //if communication directories do not yet exist, create them
@@ -163,7 +163,7 @@ int connectToWallaby(const char ssid[], const char psk[]) //returns -1 if connec
         }
         if (timer >= 10000)
         {
-			//timed out
+            //timed out
             end = 2;
         }
         timer += 100;
