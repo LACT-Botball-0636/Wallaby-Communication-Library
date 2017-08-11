@@ -212,7 +212,7 @@ int waitForSignal(int timeout)
     }
     return TIMEOUT_ERR;
 }
-
+//f
 int sendSignal(int signal)
 {
     //return 0 if sending works, otherwise return -1
