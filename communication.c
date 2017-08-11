@@ -176,7 +176,7 @@ int connectToWallaby(const char ssid[], const char psk[]) //returns -1 if connec
         
         host_ent  = gethostbyname("192.168.125.1");
         socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-                
+
         memset(&server_info, 0, sizeof(server_info));
         
         server_info.sin_family = AF_INET;
