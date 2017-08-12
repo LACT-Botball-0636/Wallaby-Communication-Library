@@ -15,7 +15,7 @@
 int side = HOST;
 
 int last_index = 0;
-int data[100];
+int data[DATA_AMNT];
 
 thread listenerThread = thread_create(dataListener);
 
@@ -103,7 +103,7 @@ void dataListener()
         {
             if ((recv(client_fd, latest_data, sizeof(int), 0) != 0)
             {
-                if (last_index >= 99) last_index = 0;
+                if (last_index >= DATA_AMNT-1) last_index = 0;
                 data[last_index] = message;
                 last_index++;
             }
@@ -115,7 +115,7 @@ void dataListener()
         {
             if ((recv(socket_fd, latest_data, sizeof(int), 0) != 0)
             {
-                if (last_index >= 99) last_index = 0;
+                if (last_index >= DATA_AMNT-1) last_index = 0;
                 data[last_index] = message;
                 last_index++;
             }
@@ -277,7 +277,7 @@ int waitForSignal(int timeout)
 void clearAllData()
 {
     int i;
-    for (i = 0; i < 100; i++)
+    for (i = 0; i < DATA_AMNT; i++)
     {
         data[i] = 0;
     }
