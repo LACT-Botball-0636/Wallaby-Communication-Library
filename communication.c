@@ -247,6 +247,7 @@ int waitForSignal(int timeout)
         {
             if ((recv(client_fd, message, sizeof(int), MSG_DONTWAIT)) != 0)
             {
+                listenerThread = thread_create(dataListener);
                 thread_start(listenerThread);
                 return message;
             }
@@ -260,6 +261,7 @@ int waitForSignal(int timeout)
         {
             if ((recv(socket_fd, message, sizeof(int), MSG_DONTWAIT)) != 0)
             {
+                listenerThread = thread_create(dataListener);
                 thread_start(listenerThread);
                 return message;
             }
@@ -267,6 +269,7 @@ int waitForSignal(int timeout)
             msleep(100);
         }
     }
+    listenerThread = thread_create(dataListener);
     thread_start(listenerThread);
     return TIMEOUT_ERR;
 }
