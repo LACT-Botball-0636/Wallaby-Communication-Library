@@ -315,7 +315,7 @@ int readData()
     {
         val = data[i+1];
         data[i] = val;
-        last_index -= 1;
+        if (last_index != 0) last_index -= 1;
     }
     return data_val;
 }
