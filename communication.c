@@ -1,5 +1,5 @@
 #include <kipr/botball.h>
-#include <stlib.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
@@ -17,8 +17,6 @@ int side = HOST;
 int last_index = 0;
 int data[DATA_AMNT];
 
-thread listenerThread = thread_create(dataListener);
-
 //server variables
 struct sockaddr_in server;
 struct sockaddr_in dest;
@@ -30,32 +28,62 @@ struct sockaddr_in server_info;
 struct hostent *host_ent;
 int socket_fd;
 
+thread listenerThread;
+
+void dataListener()
+{
+    int latest_data = 0;
+    
+    if (side == HOST)
+    {
+        while (1)
+        {
+            if (recv(client_fd, (int *)latest_data, sizeof(int), 0) != 0)
+            {
+                if (last_index >= DATA_AMNT-1) last_index = 0;
+                data[last_index] = latest_data;
+                last_index++;
+            }
+        }
+    }
+    else
+    {
+        while (1)
+        {
+            if (recv(socket_fd, (int *)latest_data, sizeof(int), 0) != 0)
+            {
+                if (last_index >= DATA_AMNT-1) last_index = 0;
+                data[last_index] = latest_data;
+                last_index++;
+            }
+        }
+    }
+}
+
 int initializeCommunications(int mode)
 {
     //1 = client, 0 = host
     //1 = client, 0 = host
-    char text[140];
+    //char text[140];
     side = mode;
-    
+    listenerThread = thread_create(dataListener);
     //if network setup files do not yet exist, install them
     if (system("[ -d /home/root/wifi_setup ]")) 
     {
         system("sudo mkdir /home/root/wifi_setup");
         FILE *f = fopen("/home/root/wifi_setup/client_on.sh", "w");
-        text = "wpa_cli ter\nkillall hostapd\nwpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant-wlan0.conf\necho \"Client is now on.\"";
-        fprintf(f,text);
+        fprintf(f,"wpa_cli ter\nkillall hostapd\nwpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant-wlan0.conf\necho \"Client is now on.\"");
         fclose(f);
         system("chmod +x /home/root/wifi_setup/client_on.sh");
         
         f = fopen("/home/root/wifi_setup/client_on.sh", "w");
-        text = "/usr/bin/python /usr/bin/wifi_configurator.py\necho \"Host is now on.\"";
-        fprintf(f,text);
+        fprintf(f,"/usr/bin/python /usr/bin/wifi_configurator.py\necho \"Host is now on.\"");
         fclose(f);
         system("chmod +x /home/root/wifi_setup/host_on.sh");
     }
     
     //if communication directories do not yet exist, create them
-    if (system("[ -d /home/root/communication ]")
+    if (system("[ -d /home/root/communication ]"))
     {
         system("sudo mkdir /home/root/communication");
         system("sudo mkdir /home/root/communication/signal");
@@ -93,42 +121,12 @@ int initializeCommunications(int mode)
     }
 }
 
-void dataListener()
-{
-    int latest_data;
-    
-    if (side == HOST)
-    {
-        while (1)
-        {
-            if ((recv(client_fd, latest_data, sizeof(int), 0) != 0)
-            {
-                if (last_index >= DATA_AMNT-1) last_index = 0;
-                data[last_index] = message;
-                last_index++;
-            }
-        }
-    }
-    else
-    {
-        while (1)
-        {
-            if ((recv(socket_fd, latest_data, sizeof(int), 0) != 0)
-            {
-                if (last_index >= DATA_AMNT-1) last_index = 0;
-                data[last_index] = message;
-                last_index++;
-            }
-        }
-    }
-}
-
 int waitForConnection()
 {
     if (side == HOST)
     {
         listen(socket_fd, BACKLOG);
-        if ((client_fd = accept(socket_fd, (struct sockaddr_in *)&dest, &size)) == -1)
+        if ((client_fd = accept(socket_fd, (struct sockaddr *)&dest, &size)) == -1)
         {
             printf("Failure accepting connection.\n");
             return -1;
@@ -136,7 +134,7 @@ int waitForConnection()
         printf("Connection successfully made.\n");
         
         //start data listening thread
-        thread_start(listeningThread);
+        thread_start(listenerThread);
         
         return 0;
     }
@@ -185,16 +183,16 @@ int connectToWallaby(const char ssid[], const char psk[]) //returns -1 if connec
     //wait for connection (not sure if this works yet)
     while (!end)
     {
-        response = "";
+        strcpy(response,"");
         fp = popen("wpa_cli status", "r");
         while (fgets(temp,1000,fp))
         {
             sprintf(response,"%s%s",response,temp);
         }
-        temp = strstr(response,"wpa_state=");
+        strcpy(temp,strstr(response,"wpa_state="));
         memcpy(status, &response[((int)(temp-response))+10],9); //places the status into var status
         status[9] = '\0';
-        if (status == "COMPLETED")
+        if (!strcmp(status, "COMPLETED"))
         {
             end = 1;
         }
@@ -236,7 +234,7 @@ int connectToWallaby(const char ssid[], const char psk[]) //returns -1 if connec
 int waitForSignal(int timeout)
 {      
     //returns signal if it is received, otherwise returns error
-    int message;
+    int message = 0;
     int base = 0;
     
     thread_destroy(listenerThread);
@@ -245,7 +243,7 @@ int waitForSignal(int timeout)
     {
         while (base < timeout)
         {
-            if ((recv(client_fd, message, sizeof(int), MSG_DONTWAIT)) != 0)
+            if ((recv(client_fd, (int *)message, sizeof(int), MSG_DONTWAIT)) != 0)
             {
                 listenerThread = thread_create(dataListener);
                 thread_start(listenerThread);
@@ -259,7 +257,7 @@ int waitForSignal(int timeout)
     {
         while (base < timeout)
         {
-            if ((recv(socket_fd, message, sizeof(int), MSG_DONTWAIT)) != 0)
+            if ((recv(socket_fd, (int *)message, sizeof(int), MSG_DONTWAIT)) != 0)
             {
                 listenerThread = thread_create(dataListener);
                 thread_start(listenerThread);
@@ -288,14 +286,14 @@ int sendSignal(int signal)
     //return 0 if sending works, otherwise return -1
     if (side == HOST)
     {
-        if ( send(client_fd, signal, sizeof(int), 0) == 0)
+        if ( send(client_fd, (int *)signal, sizeof(int), 0) == 0)
         {
             return -1;
         }
     }
     else
     {
-        if ( send(socket_fd, signal, sizeof(int), 0) == 0)
+        if ( send(socket_fd, (int *)signal, sizeof(int), 0) == 0)
         {
             return -1;
         }
@@ -325,14 +323,14 @@ int sendData(int signal)
     //return 0 if sending works, otherwise return -1
     if (side == HOST)
     {
-        if ( send(client_fd, signal, sizeof(int), 0) == 0)
+        if ( send(client_fd, (int *)signal, sizeof(int), 0) == 0)
         {
             return -1;
         }
     }
     else
     {
-        if ( send(socket_fd, signal, sizeof(int), 0) == 0)
+        if ( send(socket_fd, (int *)signal, sizeof(int), 0) == 0)
         {
             return -1;
         }
