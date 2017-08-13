@@ -68,7 +68,7 @@ int initializeCommunications(int mode)
     side = mode;
     listenerThread = thread_create(dataListener);
     //if network setup files do not yet exist, install them
-    if (system("[ -d /home/root/wifi_setup ]")) 
+    if (!system("[ -d /home/root/wifi_setup ]")) 
     {
         system("sudo mkdir /home/root/wifi_setup");
         FILE *f = fopen("/home/root/wifi_setup/client_on.sh", "w");
@@ -76,7 +76,7 @@ int initializeCommunications(int mode)
         fclose(f);
         system("chmod +x /home/root/wifi_setup/client_on.sh");
         
-        f = fopen("/home/root/wifi_setup/client_on.sh", "w");
+        f = fopen("/home/root/wifi_setup/host_on.sh", "w");
         fprintf(f,"/usr/bin/python /usr/bin/wifi_configurator.py\necho \"Host is now on.\"");
         fclose(f);
         system("chmod +x /home/root/wifi_setup/host_on.sh");
