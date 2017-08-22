@@ -102,12 +102,16 @@ int initializeCommunications(int mode)
         //set up socket server. sockets are much more efficient than ssh+touch lol
         socket_fd = socket(AF_INET, SOCK_STREAM, 0);
         
+        struct hostent *he = gethostbyname("192.168.125.1");
+        
         memset(&server, 0, sizeof(server));
         memset(&dest, 0, sizeof(dest));
         
         server.sin_family      = AF_INET;
         server.sin_port        = htons(PORT);
-        server.sin_addr.s_addr = INADDR_ANY;
+        //server.sin_addr.s_addr = INADDR_ANY; //DOES NOT WORK! NEEDS TO LISTEN ON SPECIFIC IP ADDRESS (OF COURSE)
+        bcopy((char *)he->h_addr, (char *)&server.sin_addr.s_addr, he->h_length); //assigns an ip address to listen on
+        
         
         bind(socket_fd, (struct sockaddr *)&server, sizeof(struct sockaddr));
         
@@ -209,7 +213,7 @@ int connectToWallaby(const char ssid[], const char psk[]) //returns -1 if connec
     //then connect via sockets
     if (end == 1)
     {        
-        system("dhclient -v -r wlan0");
+        system("dhclient wlan0");
         
         host_ent  = gethostbyname("192.168.125.1");
         socket_fd = socket(AF_INET, SOCK_STREAM, 0);
