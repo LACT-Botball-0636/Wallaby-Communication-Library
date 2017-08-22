@@ -73,3 +73,21 @@ Functions identically to sendSignal except for the fact that it only adds the si
 
 Returns: -1 if function failed, 0 if everything functions properly
 
+
+________________
+
+**Important security info**
+For the wallabies given out to teams over the last two seasons, the passwords can be easily cracked with only the wallaby's ID by running a small python 3 script, or a slightly modified python 2 one. The algorithm is as follows:
+
+password is composed of: the first five characters of a sha256 hash of a string of the wallaby 4-digit ID + "00"
+
+script
+```
+import hashlib
+hash_id = hashlib.sha256(str(wallaby_id)).hexdigest()[0:6]+'00'
+```
+This can be made more secure by accessing the terminal on the wireless KISS IDE, typing "cd /; find -name wifi_configurator.py" and editing the line in that file containing something similar to the last line of the above code to be a defined and personal password, such as
+```
+hash_id = "ThisIsMyPassword"
+```
+It is unsure, but measures to prevent this may be put in place next season.
