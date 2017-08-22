@@ -198,6 +198,7 @@ int connectToWallaby(const char ssid[], const char psk[]) //returns -1 if connec
         }
         timer += 100;
         msleep(100);
+        console_clear();
     }
     
     //if connection succeeded, assign IP addresses
