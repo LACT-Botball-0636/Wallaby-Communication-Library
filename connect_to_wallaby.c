@@ -27,7 +27,7 @@ void connectToWallaby(const char ssid[], const char psk[]) //returns -1 if conne
     system(set_psk);
     system("wpa_cli enable_network 0");
     system("wpa_cli save");
-	//system("sudo dhclient wlan0"); need to use in SOME cases
+	system("sudo dhclient wlan0");
 	
 	printf("Connected to %s!", ssid);
 }
