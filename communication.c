@@ -77,7 +77,7 @@ int initializeCommunications(int mode)
         system("chmod +x /home/root/wifi_setup/client_on.sh");
         
         f = fopen("/home/root/wifi_setup/host_on.sh", "w");
-        fprintf(f,"/usr/bin/python /usr/bin/wifi_configurator.py\necho \"Host is now on.\"");
+        fprintf(f,"wpa_cli ter\nkillall hostapd\nwpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant-wlan0.conf\n/usr/bin/python /usr/bin/wifi_configurator.py\necho \"Host is now on.\"");
         fclose(f);
         system("chmod +x /home/root/wifi_setup/host_on.sh");
     }
