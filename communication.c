@@ -68,27 +68,18 @@ int initializeCommunications(int mode)
     side = mode;
     listenerThread = thread_create(dataListener);
     //if network setup files do not yet exist, install them
-    if (!system("[ -d /home/root/wifi_setup ]")) 
-    {
-        system("sudo mkdir /home/root/wifi_setup");
-        FILE *f = fopen("/home/root/wifi_setup/client_on.sh", "w");
-        fprintf(f,"wpa_cli ter\nkillall hostapd\nwpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant-wlan0.conf\necho \"Client is now on.\"");
-        fclose(f);
-        system("chmod +x /home/root/wifi_setup/client_on.sh");
-        
-        f = fopen("/home/root/wifi_setup/host_on.sh", "w");
-        fprintf(f,"wpa_cli ter\nkillall hostapd\nwpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant-wlan0.conf\n/usr/bin/python /usr/bin/wifi_configurator.py\necho \"Host is now on.\"");
-        fclose(f);
-        system("chmod +x /home/root/wifi_setup/host_on.sh");
-    }
-    
-    //if communication directories do not yet exist, create them
-    if (system("[ -d /home/root/communication ]"))
-    {
-        system("sudo mkdir /home/root/communication");
-        system("sudo mkdir /home/root/communication/signal");
-        system("sudo mkdir /home/root/communication/data");
-    }
+
+    //set up scripts
+    system("sudo mkdir /home/root/wifi_setup");
+    FILE *f = fopen("/home/root/wifi_setup/client_on.sh", "w");
+    fprintf(f,"wpa_cli ter\nkillall hostapd\nwpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant-wlan0.conf\necho \"Client is now on.\"");
+    fclose(f);
+    system("chmod +x /home/root/wifi_setup/client_on.sh");
+
+    f = fopen("/home/root/wifi_setup/host_on.sh", "w");
+    fprintf(f,"wpa_cli ter\nkillall hostapd\nwpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant-wlan0.conf\n/usr/bin/python /usr/bin/wifi_configurator.py\necho \"Host is now on.\"");
+    fclose(f);
+    system("chmod +x /home/root/wifi_setup/host_on.sh");
     
     if (mode == CLIENT)
     {
