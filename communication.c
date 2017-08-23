@@ -214,7 +214,8 @@ int connectToWallaby(const char ssid[], const char psk[]) //returns -1 if connec
         
         server_info.sin_family = AF_INET;
         server_info.sin_port   = htons(PORT);
-        server_info.sin_addr   = *((struct in_addr *)host_ent->h_addr);
+        //server_info.sin_addr   = *((struct in_addr *)host_ent->h_addr);
+        bcopy((char *)host_ent->h_addr, (char *)&server_info.sin_addr.s_addr, host_ent->h_length);
         
         if (connect(socket_fd, (struct sockaddr *)&server_info, sizeof(struct sockaddr)) < 0)
         {
